@@ -24,4 +24,4 @@ Each token is created, completes pre-sale and then is moved to a Uniswap v2 liqu
 - [OpenZeppelin Contracts](https://www.openzeppelin.com/contracts)
 
 ## License
-Licensed under the MIT License and developed as part of the 
+Licensed under the MIT License and developed as part of the Frameworks Hackathon.
