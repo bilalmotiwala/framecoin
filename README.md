@@ -1,8 +1,8 @@
-# Framecoin - Memecoins in Farcaster Frames
+# Framecoin - Inframe Token Launchpad
 
-Launching a token - especially a memecoin is tough and requires great $$$. Framecoin lets you launch and share your memecoins - tradable directly via Farcaster Frames without needing to seed liquidity.
+Framecoin lets you launch your token from within a Farcaster Frame - tradable directly without needing to have pre-seeded liquidity thanks to it's built in pre-sale launchpad feature allowing you to get your token on the market faster.
 
-This project draws inspiration from [Pump.fun](https://pump.fun/) who have initially innovated on the concept and launched the same on Blast and Solana.
+Each token is created, completes pre-sale and then is moved to a Uniswap v2 liquidity pool with all the LP locked forever making your tokens unruggable.
 
 ## Technologies Used
 
@@ -20,6 +20,8 @@ This project draws inspiration from [Pump.fun](https://pump.fun/) who have initi
 - [Web3Modal](https://web3modal.com/)
 - [Base](https://www.base.org/)
 - [Alcehmy](https://alchemy.com/)
+- [Uniswap](https://uniswap.org/)
+- [OpenZeppelin Contracts](https://www.openzeppelin.com/contracts)
 
 ## License
-Licensed under the MIT License.
+Licensed under the MIT License and developed as part of the 
