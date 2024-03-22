@@ -660,6 +660,18 @@
     "@react-types/overlays" "^3.8.3"
     "@react-types/shared" "^3.21.0"
 
+"@nextui-org/avatar@^2.0.24":
+  version "2.0.24"
+  resolved "https://registry.yarnpkg.com/@nextui-org/avatar/-/avatar-2.0.24.tgz#6b4f25dff4766d6d9e05e60c8b93fca66a044dd0"
+  integrity sha512-3QUn8v61iNvAYogUbEDVnhDjBK6WBxxFYLp95a0H52zN0p2LHXe+UNwdGZYFo5QNWx6CHGH3vh2AHlLLy3WFSQ==
+  dependencies:
+    "@nextui-org/react-utils" "2.0.10"
+    "@nextui-org/shared-utils" "2.0.4"
+    "@nextui-org/use-image" "2.0.4"
+    "@react-aria/focus" "^3.14.3"
+    "@react-aria/interactions" "^3.19.1"
+    "@react-aria/utils" "^3.21.1"
+
 "@nextui-org/button@2.0.26":
   version "2.0.26"
   resolved "https://registry.yarnpkg.com/@nextui-org/button/-/button-2.0.26.tgz#006d29e7290b17ee267d200c006385e139c1cb69"
@@ -675,6 +687,21 @@
     "@react-aria/interactions" "^3.19.1"
     "@react-aria/utils" "^3.21.1"
     "@react-types/button" "^3.9.0"
+    "@react-types/shared" "^3.21.0"
+
+"@nextui-org/card@^2.0.24":
+  version "2.0.24"
+  resolved "https://registry.yarnpkg.com/@nextui-org/card/-/card-2.0.24.tgz#e57764fa91a0711221d32e9d5481d9df902ef9ec"
+  integrity sha512-16uAS0i6+EO+u8aqtmaCXatjovsyuTq51JwCLBlB67OldfgXoYcYl3GaE2VoZdEwxVu1G/qypDfXv29k46nZuA==
+  dependencies:
+    "@nextui-org/react-utils" "2.0.10"
+    "@nextui-org/ripple" "2.0.24"
+    "@nextui-org/shared-utils" "2.0.4"
+    "@nextui-org/use-aria-button" "2.0.6"
+    "@react-aria/button" "^3.8.4"
+    "@react-aria/focus" "^3.14.3"
+    "@react-aria/interactions" "^3.19.1"
+    "@react-aria/utils" "^3.21.1"
     "@react-types/shared" "^3.21.0"
 
 "@nextui-org/code@2.0.24":
@@ -783,6 +810,15 @@
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/@nextui-org/shared-utils/-/shared-utils-2.0.4.tgz#a5fbd5227ad3a2ab637582e77ad33c73d99f5f32"
   integrity sha512-Ms7A6UCvo/SZt/9Nmb7cZwHe9fZFw+EPsieTnC1vtpvDNCasxrTB0hj9VWFoYfWOaCzzqxl1AL9maIz/gMvckQ==
+
+"@nextui-org/skeleton@^2.0.24":
+  version "2.0.24"
+  resolved "https://registry.yarnpkg.com/@nextui-org/skeleton/-/skeleton-2.0.24.tgz#ee35ec96a825a2c9589dca4958dfa6585706e9b6"
+  integrity sha512-bsb+lYugSfQV3RHrEHLbHhkkeslaxybnnT4z485Y/GBYTENOiHIOnWFWntfxCbjZ6vCewGlfgnphj6zeqlk20g==
+  dependencies:
+    "@nextui-org/react-utils" "2.0.10"
+    "@nextui-org/shared-utils" "2.0.4"
+    "@nextui-org/system-rsc" "2.0.11"
 
 "@nextui-org/snippet@2.0.30":
   version "2.0.30"
@@ -923,6 +959,18 @@
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/@nextui-org/use-clipboard/-/use-clipboard-2.0.4.tgz#49439ca60368fc70711b4b3ded019c745f38f1ec"
   integrity sha512-rMcaX0QsolOJ1BQbp1T/FVsSPn2m0Ss4Z+bbdS7eM6EFKtJdVJWlpbrST0/kR2UcW1KWeK27NYmtNPF5+hgZMA==
+
+"@nextui-org/use-image@2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@nextui-org/use-image/-/use-image-2.0.4.tgz#5b758355c948d445d0cd89b18177d3d37b683f57"
+  integrity sha512-tomOkrhlhTA45qA/MLh1YmiWVGgJ2KeM0qBSLP1ikVcppc/e9UtkIJjHIGdNCnHZTjoPEh53HzyJeUMlYUM9uw==
+  dependencies:
+    "@nextui-org/use-safe-layout-effect" "2.0.4"
+
+"@nextui-org/use-safe-layout-effect@2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@nextui-org/use-safe-layout-effect/-/use-safe-layout-effect-2.0.4.tgz#92652ea61ab94abf494c98c581297769cc8f29e0"
+  integrity sha512-K7ppEhTfzdVOzbgKaNFEBi4HwRfQ8j+kRBQqsU5yo8bSM+5uv8OUy/mjpEf4i02PUDIBmsgJC4En9S537DXrwg==
 
 "@nextui-org/use-scroll-position@2.0.4":
   version "2.0.4"
