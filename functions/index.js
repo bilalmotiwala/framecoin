@@ -1,11 +1,13 @@
 require("dotenv").config();
 const functions = require("firebase-functions");
 const firebaseAdmin = require("firebase-admin");
-const admin = firebaseAdmin.initializeApp();
+const { Firestore } = require("firebase-admin/firestore");
 const { encodeFunctionData, parseEther } = require("viem");
 const { getFrameMessage, getFrameHtmlResponse } = require("@coinbase/onchainkit");
 const corsLib = require("cors");
 const cors = corsLib({ origin: "*" });
+
+const admin = firebaseAdmin.initializeApp();
 
 exports.startCreateToken = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
@@ -17,67 +19,124 @@ exports.startCreateToken = functions.https.onRequest((req, res) => {
       return res.status(500).send("Error in the request.");
     }
 
-    // Read the request body and console.log it for debugging.
+    // Getting the fid from the request body.
+    const fid = body?.untrustedData?.fid;
+
+    // Saving the fid to the database and start attribution of a new token creation to the user.
+    await admin.firestore().collection("tokenCreation").doc(String(fid)).set({
+      status: "started",
+      timestamp: Firestore.FieldValue.serverTimestamp(),
+      fid: fid
+    });
+
+    // Creating the frame response.
+    let successRes = getFrameHtmlResponse({
+      buttons: [
+        {
+          label: "Proceed",
+          action: "post",
+          target: "https://us-central1-framecoin-production.cloudfunctions.net/saveName"
+        },
+      ],
+      input:{
+        text: "Set a token name"
+      },
+      image: "https://framecoin.lol/frames/screen1.png",
+      state: {
+        fid: fid
+      }
+    });
+
+    return res.status(200).send(successRes);
+  });
+});
+
+exports.saveName = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+
+    // Getting the request body.
+    const body = req.body;
+    const { isValid } = await getFrameMessage(body);
+    if(!isValid){
+      return res.status(500).send("Error in the request.");
+    }
+
+    // Getting the fid from the request body.
     console.log("Body: ", body);
+    const fid = body?.untrustedData?.fid;
 
-    // // If there's a transactionHash, return a success message to the user.
-    // if(body?.untrustedData?.transactionId !== undefined){
-    //   const transactionId = body.untrustedData.transactionId;
-    //   let successRes = getFrameHtmlResponse({
-    //     buttons: [
-    //       {
-    //         label: "View Your Club",
-    //         action: "link",
-    //         target: "https://footballfounder.xyz/"
-    //       },
-    //       {
-    //         label: "View Transaction",
-    //         action: "link",
-    //         target: `https://basescan.org/tx/${transactionId}`
-    //       }
-    //     ],
-    //     image: `https://footballfounder.xyz/assets/mintClubSuccess.png?1`,
-    //   });
-    //   return res.status(200).send(successRes);
-    // }
+    // Getting the inputText from the request body.
+    const inputText = body?.untrustedData?.inputText || "";
 
-    // const contractAddress = "0xa78980c36cb00644eba525536da985a1e47e0d9a";
-    // const contractAbi = [{
-    //   "inputs": [],
-    //   "name": "buyTokens",
-    //   "outputs": [],
-    //   "stateMutability": "payable",
-    //   "type": "function"
-    // }];
+    // Trim the input text.
+    const tokenName = inputText.trim();
 
-    // // Fetching a random number between 1 to 509.
-    // const tokenId = Math.floor(Math.random() * 509) + 1;
+    // Creating the frame response.
+    let successRes = getFrameHtmlResponse({
+      buttons: [
+        {
+          label: "Proceed",
+          action: "post",
+          target: "https://us-central1-framecoin-production.cloudfunctions.net/saveTicker"
+        },
+      ],
+      input:{
+        text: "Name your ticker"
+      },
+      image: "https://framecoin.lol/frames/start.png",
+      state: {
+        fid: fid,
+        name: tokenName
+      }
+    });
 
-    // // Fetching that pre-generated club from the database using offset and limit.
-    // const genClub = await admin.firestore().collection("pregeneratedClubs").offset(tokenId - 1).limit(1).get();
-    // const metadataUrl = genClub.docs[0].data().metadataUrl;
-    // const signature = genClub.docs[0].data().signature;
+    return res.status(200).send(successRes);
+  });
+});
 
-    // // Encoding the function data.
-    // const data = encodeFunctionData({
-    //   abi: contractAbi,
-    //   functionName: "mintClubSender",
-    //   args: [metadataUrl, signature],
-    // });
+exports.saveTicker = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
 
-    // // Creating the frame response.
-    // const frameRes = {
-    //   chainId: `eip155:8453`,
-    //   method: "eth_sendTransaction",
-    //   params: {
-    //     abi: [],
-    //     data,
-    //     to: contractAddress,
-    //     value: parseEther("0.01").toString(),
-    //   },
-    // };
+    // Getting the request body.
+    const body = req.body;
+    const { isValid } = await getFrameMessage(body);
+    if(!isValid){
+      return res.status(500).send("Error in the request.");
+    }
 
-    // return res.status(200).json(frameRes);
-    return res.status(500);
+    // Getting the fid from the request body.
+    console.log("Body: ", body);
+    const fid = body?.untrustedData?.fid;
+
+    // Getting the inputText from the request body.
+    const inputText = body?.untrustedData?.inputText || "";
+
+    // Trim the input text.
+    const ticker = inputText.trim();
+
+    // Getting the existing state, decoding it from Uri and parsing it to JSON.
+    const state = JSON.parse(decodeURIComponent(body?.untrustedData?.state));
+
+    // Creating the frame response.
+    let successRes = getFrameHtmlResponse({
+      buttons: [
+        {
+          label: "Proceed",
+          action: "post",
+          target: "https://us-central1-framecoin-production.cloudfunctions.net/deployToken"
+        },
+      ],
+      input:{
+        text: "Name your ticker"
+      },
+      image: "https://framecoin.lol/frames/start.png",
+      state: {
+        ...state,
+        fid: fid,
+        ticker: ticker
+      }
+    });
+
+    return res.status(200).send(successRes);
   });
 });
