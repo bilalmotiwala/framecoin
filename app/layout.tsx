@@ -7,6 +7,19 @@ import { Navbar } from "@/components/navbar";
 import { Link } from "@nextui-org/link";
 import clsx from "clsx";
 
+import { getFrameMetadata } from "@coinbase/onchainkit";
+
+const frameMetadata = getFrameMetadata({
+	buttons: [
+		{
+			label: "Launch A Token",
+			action: "post",
+			target: "https://framecoin.lol",
+		},
+	],
+	image: "https://google.com"
+});
+
 export const metadata: Metadata = {
 	title: {
 		default: siteConfig.name,
@@ -22,6 +35,9 @@ export const metadata: Metadata = {
 		shortcut: "/favicon-16x16.png",
 		apple: "/apple-touch-icon.png",
 	},
+	other: {
+		...frameMetadata,
+	}
 };
 
 export default function RootLayout({
