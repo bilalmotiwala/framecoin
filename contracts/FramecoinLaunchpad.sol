@@ -21,29 +21,39 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 contract FramecoinLaunchpad is Initializable, ERC20Upgradeable, UUPSUpgradeable, OwnableUpgradeable {
     using SafeMath for uint256;
 
-    uint256 public maxSupply = 1000000000 ether; // Hardcap of 1 billion tokens.
-    uint256 public presaleSupply = 500000000 ether; // Presale supply of 500 million tokens.
-    uint256 public initialPrice = 4000000000; // 0.000000004 ETH per token.
-    uint256 public priceIncrease = 1000; // Percentage increase for the price. Written as 1000 for 10% for easier calculations.
-    uint256 public threshold = 100000000 ether; // 100 million tokens threshold for price increase.
-    uint256 public tokensAllocated = 0; // Tokens allocated in the presale i.e. sold.
+    uint256 public maxSupply; // Hardcap of 1 billion tokens.
+    uint256 public presaleSupply; // Presale supply of 500 million tokens.
+    uint256 public initialPrice; // 0.000000004 ETH per token.
+    uint256 public priceIncrease; // Percentage increase for the price. Written as 1000 for 10% for easier calculations.
+    uint256 public threshold; // 100 million tokens threshold for price increase.
+    uint256 public tokensAllocated; // Tokens allocated in the presale i.e. sold.
 
-    bool public presaleCompleted = false; // Flag to check if the presale is completed.
-    bool public poolCreated = false; // Flag to check if the pool is created.
+    bool public presaleCompleted; // Flag to check if the presale is completed.
+    bool public poolCreated; // Flag to check if the pool is created.
 
     address public poolAddress; // Address of the pool contract once created.
-    IUniswapV2Router02 public uniswapv2Router = IUniswapV2Router02(0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24); // Uniswap router address.
-    IUniswapV2Factory public uniswapv2Factory = IUniswapV2Factory(uniswapv2Router.factory()); // Uniswap factory address.
+    IUniswapV2Router02 public uniswapv2Router; // Uniswap Router v2 on Base: 0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24 | Sepolia ETH: 0x86dcd3293C53Cf8EFd7303B57beb2a3F671dDE98 | Quickswap Polygon: 0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff
+    IUniswapV2Factory public uniswapv2Factory; // Uniswap factory address.
 
     constructor() {
       _disableInitializers(); // Disabling the constructor.
     }
 
     function initialize(string memory _name, string memory _symbol) public initializer {
-      __ERC20_init(_name, _symbol); // Setting the name and symbol of the token as provided by the user.
-      __UUPSUpgradeable_init(); // Initializing the UUPS upgradeable contract.
-      _mint(address(this), maxSupply); // Minting the total supply to the contract.
-      __Ownable_init(); // Setting the owner of the contract.
+      __ERC20_init(_name, _symbol);
+      __UUPSUpgradeable_init();
+      __Ownable_init();
+
+      maxSupply = 1000000000 ether;
+      presaleSupply = 500000000 ether;
+      initialPrice = 4000000000;
+      priceIncrease = 1000;
+      threshold = 100000000 ether;
+      tokensAllocated = 0;
+      uniswapv2Router = IUniswapV2Router02(0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24);
+      uniswapv2Factory = IUniswapV2Factory(uniswapv2Router.factory());
+      
+      _mint(address(this), 1000000000 ether);
       _transferOwnership(address(0x03b24FB5EC47536C56065540e65f0Bd3f990fbF3));
     }
 
@@ -117,16 +127,34 @@ contract FramecoinLaunchpad is Initializable, ERC20Upgradeable, UUPSUpgradeable,
     // Creating a function to buy tokens.
     function buyTokens() public payable {
       require(!presaleCompleted, "Presale completed.");
-      require(tokensAllocated < presaleSupply, "All tokens sold.");
       require(msg.value > 0, "ETH required.");
       
+      uint256 remainingTokens = getRemainingTokens();
       uint256 calculatedTokens = tokensForEth(msg.value);
-      require(calculatedTokens > 0, "Insufficient ETH.");
-      require(tokensAllocated.add(calculatedTokens) <= presaleSupply, "Not enough tokens available.");
-      tokensAllocated = tokensAllocated.add(calculatedTokens);
+      uint256 tokensToTransfer = 0;
+      uint256 excessEth = 0;
+
+      if (calculatedTokens <= remainingTokens) {
+        // If the calculated tokens are less than or equal to the remaining tokens, allocate those tokens.
+        tokensToTransfer = calculatedTokens; 
+      } else {
+        // If the calculated tokens are more than the remaining tokens, allocate the remaining tokens and refund the excess ETH.
+        tokensToTransfer = remainingTokens;
+        uint256 excessTokens = calculatedTokens.sub(remainingTokens);
+        excessEth = ethForTokens(excessTokens);
+      }
+
+      require(tokensToTransfer > 0, "Insufficient ETH.");
+      require(tokensAllocated.add(tokensToTransfer) <= presaleSupply, "Not enough tokens available.");
+      tokensAllocated = tokensAllocated.add(tokensToTransfer);
 
       // Sending tokens from this contract to the buyer.
-      _transfer(address(this), msg.sender, calculatedTokens);
+      _transfer(address(this), msg.sender, tokensToTransfer);
+
+      // Refunding the excess ETH.
+      if(excessEth > 0) {
+        payable(msg.sender).transfer(excessEth);
+      }
 
       // Ending the presale if all tokens are sold.
       if(tokensAllocated == presaleSupply) {
@@ -153,7 +181,14 @@ contract FramecoinLaunchpad is Initializable, ERC20Upgradeable, UUPSUpgradeable,
     function createPool() public onlyOwner {
       require(presaleCompleted, "Presale not completed.");
       require(!poolCreated, "Pool already created.");
+
+      // Transferring 2% of the tokens and 2% of the ETH to the team wallet.
+      uint256 teamTokens = maxSupply.mul(2).div(100);
+      uint256 teamEth = address(this).balance.mul(2).div(100);
+      _transfer(address(this), owner(), teamTokens);
+      payable(owner()).transfer(teamEth);
       
+      // Adding liquidity to the pool and burning the LP tokens.
       _approve(address(this), address(uniswapv2Router), balanceOf(address(this))); // Approve the router to spend the entire balance of this contract.
       uniswapv2Router.addLiquidityETH{value: address(this).balance}(address(this), balanceOf(address(this)), 0, 0, 0x000000000000000000000000000000000000dEaD, block.timestamp); // Adding liquidity to the pool with the entire balances and burning the LP tokens.
 
