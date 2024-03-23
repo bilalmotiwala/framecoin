@@ -11,7 +11,7 @@ const { getFrameMessage, getFrameHtmlResponse } = require("@coinbase/onchainkit"
 const { createCanvas, loadImage, registerFont } = require("canvas");
 const { encodeFunctionData, parseEther } = require("viem");
 
-exports.startCreateToken = functions.https.onRequest((req, res) => {
+exports.startCreateToken = functions.runWith({minInstances: 1}).https.onRequest((req, res) => {
   cors(req, res, async () => {
 
     // Getting the request body.
@@ -53,7 +53,7 @@ exports.startCreateToken = functions.https.onRequest((req, res) => {
   });
 });
 
-exports.saveName = functions.https.onRequest((req, res) => {
+exports.saveName = functions.runWith({minInstances: 1}).https.onRequest((req, res) => {
   cors(req, res, async () => {
 
     // Getting the request body.
@@ -132,7 +132,7 @@ exports.saveName = functions.https.onRequest((req, res) => {
   });
 });
 
-exports.saveTicker = functions.https.onRequest((req, res) => {
+exports.saveTicker = functions.runWith({minInstances: 1}).https.onRequest((req, res) => {
   cors(req, res, async () => {
 
     // Getting the request body.
@@ -211,7 +211,7 @@ exports.saveTicker = functions.https.onRequest((req, res) => {
   });
 });
 
-exports.deployToken = functions.https.onRequest((req, res) => {
+exports.deployToken = functions.runWith({minInstances: 1}).https.onRequest((req, res) => {
   cors(req, res, async () => {
 
     // Getting the request body.
@@ -286,8 +286,7 @@ exports.deployToken = functions.https.onRequest((req, res) => {
     });
 
     const frameRes = {
-      // chainId: `eip155:8453`,
-      chainId: `eip155:137`,
+      chainId: `eip155:8453`,
       method: "eth_sendTransaction",
       params: {
         abi: [],
