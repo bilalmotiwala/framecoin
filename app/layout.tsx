@@ -17,7 +17,7 @@ const frameMetadata = getFrameMetadata({
 			target: "https://framecoin.lol",
 		},
 	],
-	image: "https://google.com"
+	image: "https://framecoin.lol/frames/start.png"
 });
 
 export const metadata: Metadata = {
