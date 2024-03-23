@@ -14,7 +14,7 @@ const frameMetadata = getFrameMetadata({
 		{
 			label: "Launch A Token",
 			action: "post",
-			target: "https://framecoin.lol",
+			target: "https://us-central1-framecoin-production.cloudfunctions.net/startCreateToken",
 		},
 	],
 	image: "https://framecoin.lol/frames/start.png"

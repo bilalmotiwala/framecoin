@@ -7,15 +7,18 @@ const { getFrameMessage, getFrameHtmlResponse } = require("@coinbase/onchainkit"
 const corsLib = require("cors");
 const cors = corsLib({ origin: "*" });
 
-exports.createTokenFrame = functions.https.onRequest((req, res) => {
+exports.startCreateToken = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
 
-    // // Getting the request body.
-    // const body = req.body;
-    // const { isValid } = await getFrameMessage(body);
-    // if(!isValid){
-    //   return res.status(500).send("Error in the request.");
-    // }
+    // Getting the request body.
+    const body = req.body;
+    const { isValid } = await getFrameMessage(body);
+    if(!isValid){
+      return res.status(500).send("Error in the request.");
+    }
+
+    // Read the request body and console.log it for debugging.
+    console.log("Body: ", body);
 
     // // If there's a transactionHash, return a success message to the user.
     // if(body?.untrustedData?.transactionId !== undefined){
@@ -74,6 +77,7 @@ exports.createTokenFrame = functions.https.onRequest((req, res) => {
     //   },
     // };
 
-    return res.status(200).json(frameRes);
+    // return res.status(200).json(frameRes);
+    return res.status(500);
   });
 });
