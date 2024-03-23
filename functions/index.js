@@ -210,3 +210,93 @@ exports.saveTicker = functions.https.onRequest((req, res) => {
     return res.status(200).send(successRes);
   });
 });
+
+exports.deployToken = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+
+    // Getting the request body.
+    const body = req.body;
+    const { isValid } = await getFrameMessage(body);
+    if(!isValid){
+      return res.status(500).send("Error in the request.");
+    }
+
+    // If there's a transaction hash, return the success response to the user.
+    if(body?.untrustedData?.transactionId !== undefined){
+      console.log("Body: ", body);
+      const transactionId = body.untrustedData.transactionId;
+      let successRes = getFrameHtmlResponse({
+        buttons: [
+          {
+            label: "Buy",
+            action: "post",
+            target: "https://us-central1-framecoin-production.cloudfunctions.net/refresh",
+          },
+          {
+            label: "Share Frame",
+            action: "link",
+            target: `https://basescan.org/tx/${transactionId}`
+          }
+        ],
+        image: "https://framecoin.lol/frames/progress.png",
+        state: {
+          transactionId: transactionId
+        },
+      });
+      return res.status(200).send(successRes);
+    }
+
+    const contractAddress = "0xDF36C116C1C0c1152aCeB34C65e3031141eC3230";
+    const contractAbi = [{
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "symbol",
+          "type": "string"
+        }
+      ],
+      "name": "deployFramecoinProxy",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }];
+
+    // Getting the token name and ticker from the state and fid from the request body.
+    const state = JSON.parse(decodeURIComponent(body.untrustedData.state));
+    const name = state.name;
+    const ticker = state.ticker;
+    const fid = body?.untrustedData?.fid;
+    
+    // Encoding the function data.
+    const data = encodeFunctionData({
+      abi: contractAbi,
+      functionName: "deployFramecoinProxy",
+      args: [name, ticker]
+    });
+
+    const frameRes = {
+      // chainId: `eip155:8453`,
+      chainId: `eip155:137`,
+      method: "eth_sendTransaction",
+      params: {
+        abi: [],
+        data,
+        to: contractAddress,
+        value: "0x0"
+      }
+    };
+
+    return res.status(200).json(frameRes);
+  });
+});

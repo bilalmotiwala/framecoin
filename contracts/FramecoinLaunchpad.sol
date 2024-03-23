@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 /*
-Contract: Framecoin Token Contract
+Contract: Framecoin Token Launchpad Contract
 Version: v0.0.1
 Date: 23rd of March, 2023
 Author: Bilal Motiwala
