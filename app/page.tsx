@@ -19,7 +19,7 @@ export default function Home() {
 
 			<div className="flex gap-3">
 				<Link
-					href="/create"
+					href="#"
 					className={buttonStyles({ color: "secondary", radius: "full", variant: "shadow" })}
 				>
 					Start
