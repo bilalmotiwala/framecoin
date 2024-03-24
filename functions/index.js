@@ -246,7 +246,7 @@ exports.deployToken = functions.runWith({minInstances: 1}).https.onRequest((req,
       return res.status(200).send(successRes);
     }
 
-    const contractAddress = "0xDF36C116C1C0c1152aCeB34C65e3031141eC3230";
+    const contractAddress = "0x3959224394B31e715219f7daDaCC4c84C9F4281b";
     const contractAbi = [{
       "inputs": [
         {
@@ -260,15 +260,15 @@ exports.deployToken = functions.runWith({minInstances: 1}).https.onRequest((req,
           "type": "string"
         }
       ],
-      "name": "deployFramecoinProxy",
+      "name": "createToken",
       "outputs": [
         {
           "internalType": "address",
-          "name": "",
+          "name": "cloneAddress",
           "type": "address"
         }
       ],
-      "stateMutability": "nonpayable",
+      "stateMutability": "payable",
       "type": "function"
     }];
 
@@ -281,7 +281,7 @@ exports.deployToken = functions.runWith({minInstances: 1}).https.onRequest((req,
     // Encoding the function data.
     const data = encodeFunctionData({
       abi: contractAbi,
-      functionName: "deployFramecoinProxy",
+      functionName: "createToken",
       args: [name, ticker]
     });
 
@@ -292,7 +292,7 @@ exports.deployToken = functions.runWith({minInstances: 1}).https.onRequest((req,
         abi: [],
         data,
         to: contractAddress,
-        value: "0x0"
+        value: parseEther("0").toString()
       }
     };
 

@@ -10,15 +10,12 @@ Security Contact: @bilalmotiwala on Telegram.
 */
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts-upgradeable@4.9.0/token/ERC20/ERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable@4.9.0/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable@4.9.0/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable@4.9.0/access/OwnableUpgradeable.sol";
+import { ERC20Init } from "./ERC20Init.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 
-contract FramecoinLaunchpad is Initializable, ERC20Upgradeable, UUPSUpgradeable, OwnableUpgradeable {
+contract FramecoinLaunchpad is ERC20Init {
     using SafeMath for uint256;
 
     uint256 public maxSupply; // Hardcap of 1 billion tokens.
@@ -28,36 +25,48 @@ contract FramecoinLaunchpad is Initializable, ERC20Upgradeable, UUPSUpgradeable,
     uint256 public threshold; // 100 million tokens threshold for price increase.
     uint256 public tokensAllocated; // Tokens allocated in the presale i.e. sold.
 
+    bool private _initialized; // Flag to check if the contract is initialized.
     bool public presaleCompleted; // Flag to check if the presale is completed.
     bool public poolCreated; // Flag to check if the pool is created.
 
+    address public admin; // Address of the admin of the contract.
     address public poolAddress; // Address of the pool contract once created.
     IUniswapV2Router02 public uniswapv2Router; // Uniswap Router v2 on Base: 0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24 | Sepolia ETH: 0x86dcd3293C53Cf8EFd7303B57beb2a3F671dDE98 | Quickswap Polygon: 0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff
     IUniswapV2Factory public uniswapv2Factory; // Uniswap factory address.
 
-    constructor() {
-      _disableInitializers(); // Disabling the constructor.
+    // Events
+    event FramecoinPresaleBuy(address indexed buyer, uint256 ethSpent, uint256 tokensBought);
+    event FramecoinPresaleEnded(address indexed contractAddress);
+    event FramecoinEthWithdrawn(uint256 amount);
+    event FramecoinTokensWithdrawn(uint256 amount);
+    event FramecoinPoolCreated(address indexed poolAddress);
+
+    // Modifiers
+    modifier onlyOwner() {
+        require(msg.sender == admin, "Only the owner can call this function.");
+        _;
     }
 
-    function initialize(string memory _name, string memory _symbol) public initializer {
-      __ERC20_init(_name, _symbol);
-      __UUPSUpgradeable_init();
-      __Ownable_init();
-
-      maxSupply = 1000000000 ether;
-      presaleSupply = 500000000 ether;
-      initialPrice = 4000000000;
-      priceIncrease = 1000;
-      threshold = 100000000 ether;
-      tokensAllocated = 0;
-      uniswapv2Router = IUniswapV2Router02(0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24);
-      uniswapv2Factory = IUniswapV2Factory(uniswapv2Router.factory());
-      
-      _mint(address(this), 1000000000 ether);
-      _transferOwnership(address(0x03b24FB5EC47536C56065540e65f0Bd3f990fbF3));
+    // Creating a function to initialize the contract.
+    function init(string memory name, string memory symbol) public {
+        require(!_initialized, "Contract is already initialized.");
+        _initialized = true;
+        _name = name;
+        _symbol = symbol;
+        maxSupply = 1000000000 ether;
+        presaleSupply = 500000000 ether;
+        initialPrice = 4000000000;
+        priceIncrease = 1000;
+        threshold = 100000000 ether;
+        tokensAllocated = 0;
+        presaleCompleted = false;
+        poolCreated = false;
+        admin = address(0x3F858782e007D8EEc77989Fa502Fc3090C58c221);
+        poolAddress = address(0);
+        uniswapv2Router = IUniswapV2Router02(0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24);
+        uniswapv2Factory = IUniswapV2Factory(uniswapv2Router.factory());
+        _mint(address(this), maxSupply);
     }
-
-    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
     
     // Creating a function to calculate the price of the token. The token price will increase by 10% after every 100 million tokens sold.
     function calculatePrice() public view returns (uint256) {
@@ -159,22 +168,74 @@ contract FramecoinLaunchpad is Initializable, ERC20Upgradeable, UUPSUpgradeable,
       // Ending the presale if all tokens are sold.
       if(tokensAllocated == presaleSupply) {
         presaleCompleted = true;
+        emit FramecoinPresaleEnded(address(this));
       }
+
+      emit FramecoinPresaleBuy(msg.sender, msg.value, tokensToTransfer);
     }
 
     // Creating a function to end the presale (emergency cases - remove post beta and testing).
     function endPresale() public onlyOwner {
       presaleCompleted = true;
+      emit FramecoinPresaleEnded(address(this));
+    }
+
+    // Admin functions to update contract state variables
+    function setMaxSupply(uint256 _maxSupply) public onlyOwner {
+        maxSupply = _maxSupply;
+    }
+
+    function setPresaleSupply(uint256 _presaleSupply) public onlyOwner {
+        presaleSupply = _presaleSupply;
+    }
+
+    function setInitialPrice(uint256 _initialPrice) public onlyOwner {
+        initialPrice = _initialPrice;
+    }
+
+    function setPriceIncrease(uint256 _priceIncrease) public onlyOwner {
+        priceIncrease = _priceIncrease;
+    }
+
+    function setThreshold(uint256 _threshold) public onlyOwner {
+        threshold = _threshold;
+    }
+
+    function setUniswapV2Router(address _uniswapv2Router) public onlyOwner {
+        uniswapv2Router = IUniswapV2Router02(_uniswapv2Router);
+        uniswapv2Factory = IUniswapV2Factory(uniswapv2Router.factory());
+    }
+
+    function setPoolAddress(address _poolAddress) public onlyOwner {
+        poolAddress = _poolAddress;
+    }
+
+    function setTokensAllocated(uint256 _tokensAllocated) public onlyOwner {
+        tokensAllocated = _tokensAllocated;
+    }
+
+    function setPresaleCompleted(bool _presaleCompleted) public onlyOwner {
+        presaleCompleted = _presaleCompleted;
+    }
+
+    function setPoolCreated(bool _poolCreated) public onlyOwner {
+        poolCreated = _poolCreated;
+    }
+
+    function setAdmin(address _admin) public onlyOwner {
+        admin = _admin;
     }
 
     // Creating a function to end the presale (emergency cases - remove post beta and testing).
     function withdrawEth() public onlyOwner {
-      payable(owner()).transfer(address(this).balance);
+      payable(msg.sender).transfer(address(this).balance);
+      emit FramecoinEthWithdrawn(address(this).balance);
     }
 
     // Creating a function to end the presale (emergency cases - remove post beta and testing).
     function withdrawTokens() public onlyOwner {
-      _transfer(address(this), owner(), balanceOf(address(this)));
+      _transfer(address(this), msg.sender, balanceOf(address(this)));
+      emit FramecoinTokensWithdrawn(balanceOf(address(this)));
     }
 
     // Creating a function that creates the pool contract, the presale must be completed before this. Will be automatically called by the Framecoin team.
@@ -185,8 +246,8 @@ contract FramecoinLaunchpad is Initializable, ERC20Upgradeable, UUPSUpgradeable,
       // Transferring 2% of the tokens and 2% of the ETH to the team wallet.
       uint256 teamTokens = maxSupply.mul(2).div(100);
       uint256 teamEth = address(this).balance.mul(2).div(100);
-      _transfer(address(this), owner(), teamTokens);
-      payable(owner()).transfer(teamEth);
+      _transfer(address(this), msg.sender, teamTokens);
+      payable(msg.sender).transfer(teamEth);
       
       // Adding liquidity to the pool and burning the LP tokens.
       _approve(address(this), address(uniswapv2Router), balanceOf(address(this))); // Approve the router to spend the entire balance of this contract.
@@ -195,5 +256,7 @@ contract FramecoinLaunchpad is Initializable, ERC20Upgradeable, UUPSUpgradeable,
       // Getting the pool address for future reference.
       poolAddress = uniswapv2Factory.getPair(address(this), uniswapv2Router.WETH());
       poolCreated = true;
+
+      emit FramecoinPoolCreated(poolAddress);
     }
 }
