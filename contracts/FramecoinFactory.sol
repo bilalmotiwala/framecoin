@@ -40,12 +40,12 @@ contract FramecoinFactory {
     function createToken(
         string memory name,
         string memory symbol
-    ) public payable returns (address cloneAddress) {
-        cloneAddress = Clones.clone(implementationAddress);
-
-        // Initialize the cloned contract
-        IFramecoinLaunchpad(cloneAddress).init(name, symbol);
-        emit FramecoinTokenCreated(cloneAddress);
+    ) public payable returns (address) {
+        bytes32 salt = keccak256(abi.encodePacked(address(this), name, symbol, msg.sender));
+        address newAddress = Clones.cloneDeterministic(implementationAddress, salt);
+        IFramecoinLaunchpad(newAddress).init(name, symbol);
+        emit FramecoinTokenCreated(newAddress);
+        return newAddress;
     }
 
     /**
