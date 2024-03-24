@@ -2,10 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
-
-interface IFramecoinLaunchpad {
-    function init(string memory name, string memory symbol) external;
-}
+import { FramecoinLaunchpad } from "./FramecoinLaunchpad.sol";
 
 contract FramecoinFactory {
     address public implementationAddress;
@@ -41,9 +38,8 @@ contract FramecoinFactory {
         string memory name,
         string memory symbol
     ) public payable returns (address) {
-        bytes32 salt = keccak256(abi.encodePacked(address(this), name, symbol, msg.sender));
-        address newAddress = Clones.cloneDeterministic(implementationAddress, salt);
-        IFramecoinLaunchpad(newAddress).init(name, symbol);
+        address newAddress = Clones.clone(implementationAddress);
+        FramecoinLaunchpad.init(name, symbol);
         emit FramecoinTokenCreated(newAddress);
         return newAddress;
     }

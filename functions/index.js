@@ -194,8 +194,8 @@ exports.saveTicker = functions.runWith({minInstances: 1}).https.onRequest((req, 
         {
           label: "Deploy Token",
           action: "tx",
-          target: "https://us-central1-framecoin-production.cloudfunctions.net/deployToken2",
-          postUrl: "https://us-central1-framecoin-production.cloudfunctions.net/deployToken2",
+          target: "https://us-central1-framecoin-production.cloudfunctions.net/deployToken",
+          postUrl: "https://us-central1-framecoin-production.cloudfunctions.net/deployToken",
         },
       ],
       image: `data:image/png;base64,${buffer}`,
@@ -204,14 +204,14 @@ exports.saveTicker = functions.runWith({minInstances: 1}).https.onRequest((req, 
         fid: fid,
         ticker: ticker
       },
-      postUrl: "https://us-central1-framecoin-production.cloudfunctions.net/deployToken2",
+      postUrl: "https://us-central1-framecoin-production.cloudfunctions.net/deployToken",
     });
 
     return res.status(200).send(successRes);
   });
 });
 
-exports.deployToken2 = functions.runWith({minInstances: 1}).https.onRequest((req, res) => {
+exports.deployToken = functions.runWith({minInstances: 1}).https.onRequest((req, res) => {
   cors(req, res, async () => {
 
     // Getting the request body.
@@ -246,7 +246,7 @@ exports.deployToken2 = functions.runWith({minInstances: 1}).https.onRequest((req
       return res.status(200).send(successRes);
     }
 
-    const contractAddress = "0x2Ffb27A2c18225E337b3B665B817A7cfd8B7b691";
+    const contractAddress = "0x4873B73912519012B27234C24aAF9636B80215a0";
     const contractAbi = [{
       "inputs": [
         {
@@ -264,7 +264,7 @@ exports.deployToken2 = functions.runWith({minInstances: 1}).https.onRequest((req
       "outputs": [
         {
           "internalType": "address",
-          "name": "cloneAddress",
+          "name": "",
           "type": "address"
         }
       ],

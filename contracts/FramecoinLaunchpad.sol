@@ -65,7 +65,6 @@ contract FramecoinLaunchpad is ERC20Init {
         poolAddress = address(0);
         uniswapv2Router = IUniswapV2Router02(0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24);
         uniswapv2Factory = IUniswapV2Factory(uniswapv2Router.factory());
-        _mint(address(this), maxSupply);
     }
     
     // Creating a function to calculate the price of the token. The token price will increase by 10% after every 100 million tokens sold.
@@ -158,6 +157,9 @@ contract FramecoinLaunchpad is ERC20Init {
       tokensAllocated = tokensAllocated.add(tokensToTransfer);
 
       // Sending tokens from this contract to the buyer.
+      if (balanceOf(address(this)) == 0) {
+        _mint(address(this), maxSupply);
+      }
       _transfer(address(this), msg.sender, tokensToTransfer);
 
       // Refunding the excess ETH.
